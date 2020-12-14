@@ -62,7 +62,6 @@ int masmpp::Preprocessor::process() {
             if (std::regex_match(line, R_FUNC)) {
                 std::vector<std::string> toks = split(line, ' ');
                 fname = toks[1];
-                std::cout << fname << "\n";
                 functions[fname].name = fname;
                 functions[fname].params = std::vector<std::string>(toks.begin() + 2, toks.end());
 
@@ -89,7 +88,6 @@ int masmpp::Preprocessor::process() {
                 int i = 0;
                 for (std::string param : functions[fname].params) {
                     if (params.size() < functions[fname].params.size()) {
-                        std::cout << "Not enough parameters in call to " + fname + "!\n";
                         return 1;
                     }
                     out += "set MASMPP_FUNC_" + fname + "_PARAM_" + param + " " + params[i] + "\n";
@@ -112,16 +110,12 @@ int masmpp::Preprocessor::process() {
 
         iss = std::istringstream(text);
         for (std::string line; std::getline(iss, line); ) {
-            std::cout << fnames.size() << " | " << regex_match(line, R_FVAR) << "\n";
             std::smatch fname_match;
             if (std::regex_search(line, fname_match, R_FVAR) && fnames.size() > 0) {
                 std::string fname = fnames.back();
-                std::cout << "FNAME: " << fname << "\n";
 
                 for (std::string param : functions[fname].params) {
-                    std::cout << "$" << param << "\n";
                     while ((pos = line.find("$" + param)) != std::string::npos) {
-                        std::cout << pos << " - POS\n";
                         line = line.substr(0, pos) + "MASMPP_FUNC_" + fname + "_PARAM_" + param + line.substr(pos + param.size() + 1);
                     }
                 }

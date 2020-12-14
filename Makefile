@@ -2,7 +2,7 @@ CXX = g++
 CXXSTD = c++20
 CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
-EXEC = masm++
+EXEC = dist/masm++
 OBJECTS = cli.o libmasm++.o
 
 all: $(EXEC)
