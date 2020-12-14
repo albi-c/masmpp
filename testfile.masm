@@ -1,0 +1,21 @@
+jump 3
+print "Hello, World!"
+
+read result cell1 0
+write result cell1 0
+draw clear 0 0 0 0 0 0
+print "frog"
+drawflush display1
+printflush message1
+getlink result 0
+control enabled block1 0 0 0 0
+radar enemy any any distance turret1 1 result
+sensor result block1 @copper
+set result 0
+op add result a b
+end
+jump -1 notEqual x false
+
+jump 0 always 0 0
+
+op add result @counter 2

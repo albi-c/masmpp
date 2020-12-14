@@ -1,0 +1,29 @@
+CXX = x86_64-w64-mingw32-g++
+CXXSTD = c++2a
+CXXLFLAGS = -g -std=$(CXXSTD) -static
+CXXFLAGS = -g -std=$(CXXSTD)
+EXEC = masm++.exe
+OBJECTS = cli.o libmasm++.o
+MAKEOPTIONS = -f Makefile_win
+
+all: $(EXEC)
+
+$(EXEC): $(OBJECTS)
+	@$(CXX) $(CXXLFLAGS) $^ -o $@
+
+%.o: src/%.cpp
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+run: all
+	@wine $(EXEC)
+
+crun:
+	@$(MAKE) $(MAKEOPTIONS) clean
+	@$(MAKE) $(MAKEOPTIONS) run
+
+crunc:
+	@$(MAKE) $(MAKEOPTIONS) crun
+	@$(MAKE) $(MAKEOPTIONS) clean
+
+clean:
+	@rm -f *.o $(EXEC)
