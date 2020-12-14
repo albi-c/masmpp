@@ -1,0 +1,4 @@
+.vscode
+masm++
+masm++.exe
+*.o
