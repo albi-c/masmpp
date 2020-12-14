@@ -33,6 +33,10 @@ namespace masmpp {
         const std::regex R_FBEGIN;
         const std::regex R_FVAR;
 
+        const std::map<std::string, std::string> constants = {
+            {"$RET", "MASMPP_FUNC_RET"}
+        };
+
         std::string text;
 
         int options;
@@ -40,6 +44,7 @@ namespace masmpp {
         std::string last_error;
 
         std::vector<std::string> split(std::string &s, char delim);
+        std::string replace(std::string str, std::string from, std::string to);
     public:
         Preprocessor(std::string text = "");
 

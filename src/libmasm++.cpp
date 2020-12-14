@@ -1,8 +1,8 @@
 #include "libmasm++.hpp"
 
 masmpp::Preprocessor::Preprocessor(std::string text)
-    : R_LABEL("^\\.label [\\w]+$"), R_JUMP("^\\.jump [\\w]+$"), R_FUNC("^\\.func [\\w]+((( [\\w]+)+))?$"),
-    R_CALL("^\\.call [\\w]+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret$"), R_FBEGIN("^\\.funcbegin [\\w]+$"),
+    : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_FUNC("^\\.func \\w+((( \\w+)+))?$"),
+    R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"), R_FBEGIN("^\\.funcbegin \\w+$"),
     R_FVAR("\\$\\w+(( \\$\\w+)+)?"),
     text(text) {}
 
@@ -26,6 +26,15 @@ std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char deli
         v.push_back(tok);
 
     return v;
+}
+
+std::string masmpp::Preprocessor::replace(std::string str, std::string from, std::string to) {
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return str;
 }
 
 void masmpp::Preprocessor::setText(std::string text) {
@@ -126,6 +135,11 @@ int masmpp::Preprocessor::process() {
                     last_error = "Returning from main scope";
                     return 1;
                 } else {
+                    std::vector<std::string> spl;
+                    spl = split(line, ' ');
+                    if (spl.size() > 1)
+                        out += "set MASMPP_FUNC_RET " + spl[1] + "\n";
+
                     out += "set @counter MASMPP_FUNC_" + fnames.back() + "_raddr\n";
                     out += ".label MASMPP_FUNC_" + fnames.back() + "_ret\n";
                     fnames.pop_back();
@@ -141,6 +155,10 @@ int masmpp::Preprocessor::process() {
             }
 
             i++;
+        }
+
+        for (auto const& [key, val] : constants) {
+            out = replace(out, key, val);
         }
 
         text = out;

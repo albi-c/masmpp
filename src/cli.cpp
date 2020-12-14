@@ -17,8 +17,9 @@ const std::string text = ".label a\n"
 const std::string text2 = ".func myprint text text2\n"
     "print $text\n"
     "print $text2\n"
-    ".ret\n"
+    ".ret 123\n"
     ".call myprint \"frog1 \" \"frog2\"\n"
+    "print $RET\n"
     "printflush message1\n";
 
 int main(int argc, char* argv[]) {
