@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
     std::string text = IOread(*input);
 
     Preprocessor proc(text);
-    proc.setOptions(PreprocessOptions::INLINE_OPERATIONS | PreprocessOptions::FUNCTIONS | PreprocessOptions::LABELS | PreprocessOptions::IF);
 
     if (proc.process() != 0) {
         std::cout << proc.getError() << "\n";
