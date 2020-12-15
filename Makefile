@@ -3,7 +3,7 @@ CXXSTD = c++20
 CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++
-OBJECTS = cli.o libmasm++.o
+OBJECTS = cli.o libmasm++.o strutil.o logger.o
 
 all: $(EXEC)
 
