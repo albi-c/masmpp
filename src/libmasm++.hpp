@@ -14,6 +14,9 @@
 #include "strutil.hpp"
 
 namespace masmpp {
+    /**
+     * Preprocessor options - enables or disables various functions
+     */
     enum PreprocessOptions {
         INLINE_OPERATIONS = 0b1,
         LABELS = 0b10,
@@ -21,13 +24,40 @@ namespace masmpp {
         IF = 0b1000
     };
 
+    /**
+     * Function defined in code with .func <name> [param...]
+     */
     struct Function {
         std::string name;
         std::vector<std::string> params;
     };
 
-    struct InlineOperation {};
+    /**
+     * Element of an inline operation
+     */
+    struct OperationElement {
+        std::string type;
+        std::string val;
+    };
 
+    /**
+     * Inline operation, stores its elements
+     */
+    struct InlineOperation {
+        std::vector<OperationElement> elements;
+
+        std::string text;
+
+        size_t startPos;
+        size_t endPos;
+
+        bool error = false;
+        bool empty = true;
+    };
+
+    /**
+     * Main Preprocessor class
+     */
     class Preprocessor {
     private:
         const std::regex R_LABEL;
@@ -57,21 +87,53 @@ namespace masmpp {
 
         std::string last_error;
 
-        // std::vector<std::string> split(std::string &s, char delim);
-        // std::string replace(std::string &str, std::string from, std::string to);
-        InlineOperation* findInlineOp(std::string str, size_t begin = 0);
+        /**
+         * Parses inline operation
+         * @param str string to parse
+         *            example: [ a + b - c * d ]
+         */
+        std::vector<OperationElement> parseInlineOp(std::string &str);
+
+        /**
+         * Find inline operation
+         * @param str string to find inline operation in
+         * @param begin where to start searching from
+         */
+        InlineOperation findInlineOp(std::string &str, size_t begin = 0);
         int genID();
     public:
-        Preprocessor(std::string text = "");
+        Preprocessor(std::string text = "", int options = 0xffff);
 
+        /**
+         * Set text to process
+         * @param text
+         */
         void setText(std::string text);
+
+        /**
+         * Get text (processed if process() called after setting text)
+         */
         std::string getText();
 
+        /**
+         * Set preprocessor options
+         */
         void setOptions(int options);
+
+        /**
+         * Get preprocessor options
+         */
         int getOptions();
 
+        /**
+         * Process the text
+         * Returns 1 for error and 0 for OK
+         */
         int process();
 
+        /**
+         * Returns last error
+         */
         std::string getError();
     };
 }

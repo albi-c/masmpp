@@ -1,44 +1,56 @@
 #include "libmasm++.hpp"
 
-masmpp::Preprocessor::Preprocessor(std::string text)
+masmpp::Preprocessor::Preprocessor(std::string text, int options)
     : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_CJUMP("^\\.jump \\w+ \\w+$"), R_RCJUMP("^\\.jump \\w+ \\!\\w+$"),
     R_FUNC("^\\.func \\w+((( \\w+)+))?$"), R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"),
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
-    text(text) {}
+    text(text), options(options) {}
 
-// std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char delim) {
-//     std::vector<std::string> v;
-    
-//     std::string tok;
-//     bool quotes = false;
-//     for (char &c : str) {
-//         if (c == ' ' && !quotes) {
-//             v.push_back(tok);
-//             tok = "";
-//         } else if (c == '"') {
-//             quotes = !quotes;
-//             tok += c;
-//         } else {
-//             tok += c;
-//         }
-//     }
-//     if (!tok.empty())
-//         v.push_back(tok);
+std::vector<masmpp::OperationElement> masmpp::Preprocessor::parseInlineOp(std::string &str) {
+    return std::vector<masmpp::OperationElement>();
+}
 
-//     return v;
-// }
+masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, size_t begin) {
+    size_t startpos;
+    size_t endpos;
 
-// std::string masmpp::Preprocessor::replace(std::string &str, std::string from, std::string to) {
-//     size_t start_pos = 0;
-//     while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-//         str.replace(start_pos, from.length(), to);
-//         start_pos += to.length();
-//     }
-//     return str;
-// }
+    bool found = false;
 
-masmpp::InlineOperation* masmpp::Preprocessor::findInlineOp(std::string str, size_t begin) {
-    return nullptr;
+    size_t i = 0;
+    for (char &c : str.substr(begin)) {
+        if (c == '[') {
+            if (found) {
+                last_error = "Nested inline operations not yet supported";
+                InlineOperation ret;
+                ret.error = true;
+                return ret;
+            }
+
+            found = true;
+            startpos = i;
+        } else if (c == ']') {
+            if (!found) {
+                last_error = "Found closing bracket without a corresponding opening one";
+                InlineOperation ret;
+                ret.error = true;
+                return ret;
+            }
+
+            endpos = i;
+
+            InlineOperation ret;
+            ret.text = str.substr(startpos, endpos);
+            ret.startPos = startpos;
+            ret.endPos = endpos;
+            ret.elements = parseInlineOp(ret.text);
+
+            return ret;
+        }
+
+        i++;
+    }
+
+    return InlineOperation();
 }
 
 int masmpp::Preprocessor::genID() {
@@ -69,8 +81,11 @@ int masmpp::Preprocessor::process() {
 
         std::istringstream iss(text);
         for (std::string line; std::getline(iss, line); ) {
-            InlineOperation* op = findInlineOp(line);
-            if (op != nullptr) {
+            InlineOperation op = findInlineOp(line);
+            if (op.error) {
+                return 1;
+            }
+            if (!op.empty) {
             }
         }
     }
