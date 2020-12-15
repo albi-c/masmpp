@@ -3,12 +3,13 @@ CXXSTD = c++20
 CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++
+RELEASEFILE = masm++-linux.tar.gz
 OBJECTS = cli.o libmasm++.o strutil.o logger.o
 
 all: $(EXEC)
 
 release: $(EXEC)
-	@tar -czvf masm++-linux.tar.gz $(EXEC)
+	@tar -czvf $(RELEASEFILE) $(EXEC)
 
 $(EXEC): $(OBJECTS)
 	@$(CXX) $(CXXLFLAGS) $^ -o $@
@@ -28,4 +29,4 @@ crunc:
 	@$(MAKE) clean
 
 clean:
-	@rm -f *.o *.tar.gz $(EXEC)
+	@rm -f *.o $(RELEASEFILE) $(EXEC)

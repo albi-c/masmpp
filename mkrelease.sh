@@ -1,4 +1,6 @@
 #!/bin/sh
 
 make release
-make -f Makefile_win release
+
+# TODO: ld segfaults
+# make -f Makefile_win release
