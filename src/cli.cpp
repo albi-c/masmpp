@@ -13,50 +13,42 @@ const std::string text2 = ".func myprint text text2\n"
     "print $RET\n"
     "printflush message1\n";
 
-class IODevice {
-public:
-    void write(std::string text) {}
-    std::string read() { return ""; }
-};
+void IOwrite(std::ostream &stream, std::string text) {
+    stream << text;
+}
 
-class STDIO : public IODevice {
-public:
-    void write(std::string text) {
-        std::cout << text;
+std::string IOread(std::istream &stream) {
+    std::string text;
+    for (std::string line; std::getline(std::cin, line); ) {
+        text += line + "\n";
     }
-    std::string read() {
-        std::string text;
-        for (std::string line; std::getline(std::cin, line); ) {
-            text += line + "\n";
-        }
-        return text;
-    }
-};
+    return text;
+}
 
 int main(int argc, char* argv[]) {
-    IODevice input = STDIO();
-    IODevice output = STDIO();
+    std::istream* input = &std::cin;
+    std::ostream* output = &std::cout;
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
 
         
         if (arg == "-i:s")
-            input = STDIO();
+            input = &std::cin;
         if (arg == "-o:s")
-            output = STDIO();
+            output = &std::cout;
     }
 
-    std::string text = input.read();
+    std::string text = IOread(*input);
 
     Preprocessor proc(text);
-    proc.setOptions(PreprocessOptions::INLINE_OPERATIONS | PreprocessOptions::FUNCTIONS | PreprocessOptions::LABELS);
+    proc.setOptions(PreprocessOptions::INLINE_OPERATIONS | PreprocessOptions::FUNCTIONS | PreprocessOptions::LABELS | PreprocessOptions::IF);
 
     if (proc.process() != 0) {
         std::cout << proc.getError() << "\n";
     }
 
-    output.write(proc.getText());
+    IOwrite(*output, proc.getText());
 
     return 0;
 }

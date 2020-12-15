@@ -6,3 +6,4 @@ Mindustry assembly preprocessor
  - labels
  - functions
  - inline operations (not implemented yet)
+ - if, else

@@ -19,3 +19,6 @@ jump -1 notEqual x false
 jump 0 always 0 0
 
 op add result @counter 2
+
+jump -1 notEqual a true
+jump -1 equal x false

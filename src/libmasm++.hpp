@@ -30,11 +30,16 @@ namespace masmpp {
     private:
         const std::regex R_LABEL;
         const std::regex R_JUMP;
+        const std::regex R_CJUMP;
+        const std::regex R_RCJUMP;
         const std::regex R_FUNC;
         const std::regex R_CALL;
         const std::regex R_RET;
         const std::regex R_FBEGIN;
         const std::regex R_FVAR;
+        const std::regex R_IF;
+        const std::regex R_ELSE;
+        const std::regex R_EIF;
 
         const std::map<std::string, std::string> constants = {
             {"$RET", "MASMPP_FUNC_RET"}
@@ -49,6 +54,7 @@ namespace masmpp {
         std::vector<std::string> split(std::string &s, char delim);
         std::string replace(std::string &str, std::string from, std::string to);
         InlineOperation* findInlineOp(std::string str, size_t begin = 0);
+        int genID();
     public:
         Preprocessor(std::string text = "");
 

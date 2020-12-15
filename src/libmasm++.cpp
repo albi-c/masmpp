@@ -1,9 +1,9 @@
 #include "libmasm++.hpp"
 
 masmpp::Preprocessor::Preprocessor(std::string text)
-    : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_FUNC("^\\.func \\w+((( \\w+)+))?$"),
-    R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"), R_FBEGIN("^\\.funcbegin \\w+$"),
-    R_FVAR("\\$\\w+(( \\$\\w+)+)?"),
+    : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_CJUMP("^\\.jump \\w+ \\w+$"), R_RCJUMP("^\\.jump \\w+ \\!\\w+$"),
+    R_FUNC("^\\.func \\w+((( \\w+)+))?$"), R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"),
+    R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
     text(text) {}
 
 std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char delim) {
@@ -39,6 +39,10 @@ std::string masmpp::Preprocessor::replace(std::string &str, std::string from, st
 
 masmpp::InlineOperation* masmpp::Preprocessor::findInlineOp(std::string str, size_t begin) {
     return nullptr;
+}
+
+int masmpp::Preprocessor::genID() {
+    return (rand() % 999999) - 1;
 }
 
 void masmpp::Preprocessor::setText(std::string text) {
@@ -175,7 +179,53 @@ int masmpp::Preprocessor::process() {
         text = out;
     }
     if (options & PreprocessOptions::IF) {
-        // TODO
+        std::vector<int> ifs;
+        std::map<int, bool> hasElse;
+
+        std::string out;
+
+        std::istringstream iss(text);
+        for (std::string line; std::getline(iss, line); ) {
+            if (std::regex_match(line, R_IF)) {
+                line.erase(0, line.find(" ") + 1);
+
+                int id = genID();
+
+                ifs.push_back(id);
+                hasElse[id] = false;
+
+                // out += "op add MASMPP_IF_" + std::to_string(id) + "_true @counter 2\n";
+                // out += "set @counter MASMPP_IF_" + std::to_string(id) + "_true ifEqual " + line + " true\n";
+                out += ".jump MASMPP_IF_" + std::to_string(id) + "_else !" + line + "\n";
+            } else if (std::regex_match(line, R_ELSE)) {
+                if (ifs.size() <= 0) {
+                    last_error = "Else without opening if";
+                    return 1;
+                }
+
+                int id = ifs.back();
+
+                hasElse[id] = true;
+
+                out += ".jump MASMPP_IF_" + std::to_string(id) + "_end\n";
+                out += ".label MASMPP_IF_" + std::to_string(id) + "_else\n";
+            } else if (std::regex_match(line, R_EIF)) {
+                if (ifs.size() <= 0) {
+                    last_error = "Eif without opening if";
+                    return 1;
+                }
+
+                int id = ifs.back();
+
+                if (!hasElse[id])
+                    out += ".label MASMPP_IF_" + std::to_string(id) + "_else\n";
+                out += ".label MASMPP_IF_" + std::to_string(id) + "_end\n";
+            } else {
+                out += line + "\n";
+            }
+        }
+
+        text = out;
     }
     if (options & PreprocessOptions::LABELS) {
         std::map<std::string, int> labels;
@@ -215,6 +265,24 @@ int masmpp::Preprocessor::process() {
                 }
 
                 out += "jump " + std::to_string(labels[line]) + " always 0 0\n";
+            } else if (std::regex_match(line, R_RCJUMP)) {
+                std::vector<std::string> spl = split(line, ' ');
+
+                if (!labels.count(spl[1])) {
+                    last_error = "Label \"" + line + "\" not found!";
+                    return 1;
+                }
+
+                out += "jump " + std::to_string(labels[spl[1]]) + " equal " + spl[2].substr(1) + " false\n";
+            } else if (std::regex_match(line, R_CJUMP)) {
+                std::vector<std::string> spl = split(line, ' ');
+
+                if (!labels.count(spl[1])) {
+                    last_error = "Label \"" + line + "\" not found!";
+                    return 1;
+                }
+
+                out += "jump " + std::to_string(labels[spl[1]]) + " equal " + spl[2] + " true\n";
             } else {
                 out += line + "\n";
             }
