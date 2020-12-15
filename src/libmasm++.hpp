@@ -45,6 +45,10 @@ namespace masmpp {
             {"$RET", "MASMPP_FUNC_RET"}
         };
 
+        const std::vector<PreprocessOptions> disabledOperations = {
+            PreprocessOptions::INLINE_OPERATIONS
+        };
+
         std::string text;
 
         int options;

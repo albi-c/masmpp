@@ -60,6 +60,10 @@ int masmpp::Preprocessor::getOptions() {
 }
 
 int masmpp::Preprocessor::process() {
+    for (auto op : disabledOperations) {
+        options &= !op;
+    }
+
     if (options & PreprocessOptions::INLINE_OPERATIONS) {
         std::string out;
 

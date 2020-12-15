@@ -8,7 +8,7 @@ OBJECTS = cli.o libmasm++.o
 all: $(EXEC)
 
 release: $(EXEC)
-	tar -czvf masm++-linux.tar.gz $(EXEC)
+	@tar -czvf masm++-linux.tar.gz $(EXEC)
 
 $(EXEC): $(OBJECTS)
 	@$(CXX) $(CXXLFLAGS) $^ -o $@
