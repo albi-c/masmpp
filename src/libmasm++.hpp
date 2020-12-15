@@ -15,13 +15,16 @@ namespace masmpp {
     enum PreprocessOptions {
         INLINE_OPERATIONS = 0b1,
         LABELS = 0b10,
-        FUNCTIONS = 0b100
+        FUNCTIONS = 0b100,
+        IF = 0b1000
     };
 
     struct Function {
         std::string name;
         std::vector<std::string> params;
     };
+
+    struct InlineOperation {};
 
     class Preprocessor {
     private:
@@ -44,7 +47,8 @@ namespace masmpp {
         std::string last_error;
 
         std::vector<std::string> split(std::string &s, char delim);
-        std::string replace(std::string str, std::string from, std::string to);
+        std::string replace(std::string &str, std::string from, std::string to);
+        InlineOperation* findInlineOp(std::string str, size_t begin = 0);
     public:
         Preprocessor(std::string text = "");
 

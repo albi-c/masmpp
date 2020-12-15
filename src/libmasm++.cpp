@@ -28,13 +28,17 @@ std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char deli
     return v;
 }
 
-std::string masmpp::Preprocessor::replace(std::string str, std::string from, std::string to) {
+std::string masmpp::Preprocessor::replace(std::string &str, std::string from, std::string to) {
     size_t start_pos = 0;
     while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);
         start_pos += to.length();
     }
     return str;
+}
+
+masmpp::InlineOperation* masmpp::Preprocessor::findInlineOp(std::string str, size_t begin) {
+    return nullptr;
 }
 
 void masmpp::Preprocessor::setText(std::string text) {
@@ -53,7 +57,14 @@ int masmpp::Preprocessor::getOptions() {
 
 int masmpp::Preprocessor::process() {
     if (options & PreprocessOptions::INLINE_OPERATIONS) {
-        // TODO
+        std::string out;
+
+        std::istringstream iss(text);
+        for (std::string line; std::getline(iss, line); ) {
+            InlineOperation* op = findInlineOp(line);
+            if (op != nullptr) {
+            }
+        }
     }
     if (options & PreprocessOptions::FUNCTIONS) {
         std::map<std::string, Function> functions;
@@ -162,6 +173,9 @@ int masmpp::Preprocessor::process() {
         }
 
         text = out;
+    }
+    if (options & PreprocessOptions::IF) {
+        // TODO
     }
     if (options & PreprocessOptions::LABELS) {
         std::map<std::string, int> labels;
