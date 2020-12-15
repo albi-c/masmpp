@@ -1,5 +1,5 @@
 CXX = x86_64-w64-mingw32-g++
-CXXSTD = c++14
+CXXSTD = c++17
 CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++.exe
@@ -9,7 +9,7 @@ MAKEOPTIONS = -f Makefile_win
 all: $(EXEC)
 
 release: $(EXEC)
-	zip masm++-windows.zip $(EXEC)
+	@zip masm++-windows.zip $(EXEC)
 
 $(EXEC): $(OBJECTS)
 	@$(CXX) $(CXXLFLAGS) $^ -o $@
