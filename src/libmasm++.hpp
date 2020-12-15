@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <iomanip>
 
+#include "strutil.hpp"
+
 namespace masmpp {
     enum PreprocessOptions {
         INLINE_OPERATIONS = 0b1,
@@ -55,8 +57,8 @@ namespace masmpp {
 
         std::string last_error;
 
-        std::vector<std::string> split(std::string &s, char delim);
-        std::string replace(std::string &str, std::string from, std::string to);
+        // std::vector<std::string> split(std::string &s, char delim);
+        // std::string replace(std::string &str, std::string from, std::string to);
         InlineOperation* findInlineOp(std::string str, size_t begin = 0);
         int genID();
     public:

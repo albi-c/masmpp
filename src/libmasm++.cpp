@@ -6,36 +6,36 @@ masmpp::Preprocessor::Preprocessor(std::string text)
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
     text(text) {}
 
-std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char delim) {
-    std::vector<std::string> v;
+// std::vector<std::string> masmpp::Preprocessor::split(std::string &str, char delim) {
+//     std::vector<std::string> v;
     
-    std::string tok;
-    bool quotes = false;
-    for (char &c : str) {
-        if (c == ' ' && !quotes) {
-            v.push_back(tok);
-            tok = "";
-        } else if (c == '"') {
-            quotes = !quotes;
-            tok += c;
-        } else {
-            tok += c;
-        }
-    }
-    if (!tok.empty())
-        v.push_back(tok);
+//     std::string tok;
+//     bool quotes = false;
+//     for (char &c : str) {
+//         if (c == ' ' && !quotes) {
+//             v.push_back(tok);
+//             tok = "";
+//         } else if (c == '"') {
+//             quotes = !quotes;
+//             tok += c;
+//         } else {
+//             tok += c;
+//         }
+//     }
+//     if (!tok.empty())
+//         v.push_back(tok);
 
-    return v;
-}
+//     return v;
+// }
 
-std::string masmpp::Preprocessor::replace(std::string &str, std::string from, std::string to) {
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
-    return str;
-}
+// std::string masmpp::Preprocessor::replace(std::string &str, std::string from, std::string to) {
+//     size_t start_pos = 0;
+//     while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+//         str.replace(start_pos, from.length(), to);
+//         start_pos += to.length();
+//     }
+//     return str;
+// }
 
 masmpp::InlineOperation* masmpp::Preprocessor::findInlineOp(std::string str, size_t begin) {
     return nullptr;
@@ -60,8 +60,8 @@ int masmpp::Preprocessor::getOptions() {
 }
 
 int masmpp::Preprocessor::process() {
-    for (auto op : disabledOperations) {
-        options &= !op;
+    for (int op : disabledOperations) {
+        options &= ~op;
     }
 
     if (options & PreprocessOptions::INLINE_OPERATIONS) {
@@ -88,7 +88,7 @@ int masmpp::Preprocessor::process() {
                 continue;
 
             if (std::regex_match(line, R_FUNC)) {
-                std::vector<std::string> toks = split(line, ' ');
+                std::vector<std::string> toks = su::split(line, ' ');
                 fname = toks[1];
                 functions[fname].name = fname;
                 functions[fname].params = std::vector<std::string>(toks.begin() + 2, toks.end());
@@ -108,7 +108,7 @@ int masmpp::Preprocessor::process() {
         iss = std::istringstream(text);
         for (std::string line; std::getline(iss, line); ) {
             if (std::regex_match(line, R_CALL)) {
-                std::vector<std::string> toks = split(line, ' ');
+                std::vector<std::string> toks = su::split(line, ' ');
                 fname = toks[1];
                 functions[fname].name = fname;
                 std::vector<std::string> params = std::vector<std::string>(toks.begin() + 2, toks.end());
@@ -155,7 +155,7 @@ int masmpp::Preprocessor::process() {
                     return 1;
                 } else {
                     std::vector<std::string> spl;
-                    spl = split(line, ' ');
+                    spl = su::split(line, ' ');
                     if (spl.size() > 1)
                         out += "set MASMPP_FUNC_RET " + spl[1] + "\n";
 
@@ -177,7 +177,7 @@ int masmpp::Preprocessor::process() {
         }
 
         for (auto const& [key, val] : constants) {
-            out = replace(out, key, val);
+            out = su::replace(out, key, val);
         }
 
         text = out;
@@ -270,7 +270,7 @@ int masmpp::Preprocessor::process() {
 
                 out += "jump " + std::to_string(labels[line]) + " always 0 0\n";
             } else if (std::regex_match(line, R_RCJUMP)) {
-                std::vector<std::string> spl = split(line, ' ');
+                std::vector<std::string> spl = su::split(line, ' ');
 
                 if (!labels.count(spl[1])) {
                     last_error = "Label \"" + line + "\" not found!";
@@ -279,7 +279,7 @@ int masmpp::Preprocessor::process() {
 
                 out += "jump " + std::to_string(labels[spl[1]]) + " equal " + spl[2].substr(1) + " false\n";
             } else if (std::regex_match(line, R_CJUMP)) {
-                std::vector<std::string> spl = split(line, ' ');
+                std::vector<std::string> spl = su::split(line, ' ');
 
                 if (!labels.count(spl[1])) {
                     last_error = "Label \"" + line + "\" not found!";
