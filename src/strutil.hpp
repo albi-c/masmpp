@@ -38,7 +38,7 @@ namespace su {
      * @param from string being replaced
      * @param to string to change to
      */
-    std::string replace(std::string &str, std::string from, std::string to);
+    std::string replace(std::string str, std::string from, std::string to);
 };
 
 #endif
