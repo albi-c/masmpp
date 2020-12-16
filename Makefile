@@ -4,7 +4,7 @@ CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++
 RELEASEFILE = masm++-linux.tar.gz
-OBJECTS = cli.o libmasm++.o strutil.o logger.o
+OBJECTS = cli.o libmasm++.o strutil.o logger.o clipboard_linux.o
 
 all: $(EXEC)
 

@@ -3,7 +3,7 @@ CXXSTD = c++2a -lstdc++
 CXXLFLAGS = -g -std=$(CXXSTD)
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++.exe
-OBJECTS = cli.o libmasm++.o strutil.o logger.o
+OBJECTS = cli.o libmasm++.o strutil.o logger.o clipboard_windows.o
 RELEASEFILE = masm++-windows.zip
 MAKEOPTIONS = -f Makefile_win
 
