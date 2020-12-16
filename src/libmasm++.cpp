@@ -164,9 +164,6 @@ int masmpp::Preprocessor::process() {
                 lastPos = op.endPos + 1;
 
                 ops.push_back(op);
-
-                if (op.error)
-                    return 1;
                 
                 std::string txt = genInlineOp(op);
                 out += txt + "\n";
@@ -222,7 +219,8 @@ int masmpp::Preprocessor::process() {
                 
                 int i = 0;
                 for (std::string param : functions[fname].params) {
-                    if (params.size() < functions[fname].params.size()) {
+                    if (params.size() != functions[fname].params.size()) {
+                        last_error = "Incorrect number of parameters in call to " + fname;
                         return 1;
                     }
                     out += "set MASMPP_FUNC_" + fname + "_PARAM_" + param + " " + params[i] + "\n";

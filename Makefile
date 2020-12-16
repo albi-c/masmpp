@@ -30,3 +30,6 @@ crunc:
 
 clean:
 	@rm -f *.o $(RELEASEFILE) $(EXEC)
+
+cleankrelease:
+	@rm -f *.o $(EXEC)

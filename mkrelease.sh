@@ -1,5 +1,5 @@
 #!/bin/sh
 
 make release
-make clean
+make cleankrelease
 make -f Makefile_win release

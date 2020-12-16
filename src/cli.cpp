@@ -33,9 +33,9 @@ int main(int argc, char* argv[]) {
             output = &clipboard;
     }
 
-    // std::string text = input->read();
+    std::string text = input->read();
 
-    masmpp::Preprocessor proc(text2);
+    masmpp::Preprocessor proc(text);
 
     if (proc.process() != 0) {
         log::e(proc.getError());
