@@ -6,7 +6,6 @@ masmpp::Preprocessor::Preprocessor(std::string text, int options)
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
     text(text), options(options) {}
 
-//std::string masmpp::Preprocessor::genInlineOp(std::vector<OperationElement> &elements) {
 std::string masmpp::Preprocessor::genInlineOp(InlineOperation &operation) {
     std::vector<OperationElement> elements = operation.elements;
     std::string varName = operation.varName;
@@ -162,7 +161,6 @@ int masmpp::Preprocessor::process() {
                 if (op.empty)
                     break;
                 
-                std::cout << op.endPos << std::endl;
                 lastPos = op.endPos + 1;
 
                 ops.push_back(op);

@@ -1,7 +1,8 @@
-#include "libmasm++.hpp"
-
 #include <string>
 #include <iostream>
+
+#include "libmasm++.hpp"
+#include "logger.hpp"
 
 const std::string text2 = "print [1 + 2 - 3] [ 4 + 5 - 6 ]\n"
     "print  \"[ 1 + 2 - 3 ]\"\n"
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
     masmpp::Preprocessor proc(text2);
 
     if (proc.process() != 0) {
-        std::cout << proc.getError() << "\n";
+        log::e(proc.getError());
     }
 
     IOwrite(*output, proc.getText());
