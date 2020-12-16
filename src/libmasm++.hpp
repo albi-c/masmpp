@@ -33,10 +33,18 @@ namespace masmpp {
     };
 
     /**
+     * Inline operation element types
+     */
+    enum OperationElementType {
+        OP,
+        VAL
+    };
+
+    /**
      * Element of an inline operation
      */
     struct OperationElement {
-        std::string type;
+        OperationElementType type;
         std::string val;
     };
 
@@ -47,6 +55,7 @@ namespace masmpp {
         std::vector<OperationElement> elements;
 
         std::string text;
+        std::string varName;
 
         size_t startPos;
         size_t endPos;
@@ -55,11 +64,13 @@ namespace masmpp {
         bool empty = true;
     };
 
+
     /**
      * Main Preprocessor class
      */
     class Preprocessor {
     private:
+        // regexes used for detecting custom instructions
         const std::regex R_LABEL;
         const std::regex R_JUMP;
         const std::regex R_CJUMP;
@@ -73,26 +84,37 @@ namespace masmpp {
         const std::regex R_ELSE;
         const std::regex R_EIF;
 
+        // constants - first value is replaced by the second one
         const std::map<std::string, std::string> constants = {
             {"$RET", "MASMPP_FUNC_RET"}
         };
 
+
+        // disabled operations - useful for non-finished operations
         const std::vector<PreprocessOptions> disabledOperations = {
-            PreprocessOptions::INLINE_OPERATIONS
+            // PreprocessOptions::INLINE_OPERATIONS
         };
 
         std::string text;
 
+        // preprocessor options
         int options;
 
+        // last occured error
         std::string last_error;
+
+        /**
+         * Generate inline operation calculation
+         * @param operation inline operation to generate code for
+         */
+        std::string genInlineOp(InlineOperation &operation);
 
         /**
          * Parses inline operation
          * @param str string to parse
          *            example: [ a + b - c * d ]
          */
-        std::vector<OperationElement> parseInlineOp(std::string &str);
+        std::vector<OperationElement> parseInlineOp(const std::string &str);
 
         /**
          * Find inline operation
@@ -102,6 +124,19 @@ namespace masmpp {
         InlineOperation findInlineOp(std::string &str, size_t begin = 0);
         int genID();
     public:
+        /**
+         * Map containing all supported inline operations
+         */
+        std::map<std::string, std::string> inlineOperations = {
+            {"+", "add"},
+            {"-", "sub"}
+        };
+
+        /**
+         * Preprocessor initializer
+         * @param text text to process
+         * @param options preprocessor options
+         */
         Preprocessor(std::string text = "", int options = 0xffff);
 
         /**

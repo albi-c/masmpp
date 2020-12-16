@@ -1,11 +1,11 @@
 #include "strutil.hpp"
 
-std::vector<std::string> su::split(std::string &str, char delim) {
+std::vector<std::string> su::split(const std::string &str, char delim) {
     std::vector<std::string> v;
     
     std::string tok;
     bool quotes = false;
-    for (char &c : str) {
+    for (char c : str) {
         if (c == ' ' && !quotes) {
             v.push_back(tok);
             tok = "";

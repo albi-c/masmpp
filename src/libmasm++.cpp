@@ -6,19 +6,82 @@ masmpp::Preprocessor::Preprocessor(std::string text, int options)
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
     text(text), options(options) {}
 
-std::vector<masmpp::OperationElement> masmpp::Preprocessor::parseInlineOp(std::string &str) {
-    return std::vector<masmpp::OperationElement>();
+//std::string masmpp::Preprocessor::genInlineOp(std::vector<OperationElement> &elements) {
+std::string masmpp::Preprocessor::genInlineOp(InlineOperation &operation) {
+    std::vector<OperationElement> elements = operation.elements;
+    std::string varName = operation.varName;
+
+    std::string out;
+    OperationElement lastElem;
+
+    for (auto &elem : elements) {
+        if (elem.val.empty())
+            continue;
+        if (elem.type == OperationElementType::OP) {
+            if (out.empty()) {
+                last_error = "Inline operation cannot start with an operator";
+                return "ERROR";
+            }
+            if (lastElem.type == OperationElementType::OP) {
+                last_error = "Operator must be followed by value, not another operator";
+                return "ERROR";
+            }
+        } else if (elem.type == OperationElementType::VAL) {
+            if (lastElem.type == OperationElementType::VAL) {
+                last_error = "Value must be followed by operator, not another value";
+                return "ERROR";
+            }
+
+            if (out.empty()) {
+                out += "set " + varName + " " + elem.val + "\n";
+            } else {
+                out += "op " + inlineOperations[lastElem.val] + " " + varName + " " + varName + " " + elem.val + "\n";
+            }
+        }
+
+        lastElem = elem;
+    }
+
+    return out;
+}
+
+std::vector<masmpp::OperationElement> masmpp::Preprocessor::parseInlineOp(const std::string &str) {
+    std::vector<std::string> spl = su::split(str, ' ');
+
+    std::vector<masmpp::OperationElement> result;
+
+    for (auto &s : spl) {
+        OperationElement el;
+        el.val = s;
+        if (inlineOperations.find(s) != inlineOperations.end()) {
+            el.type = OperationElementType::OP;
+        } else {
+            el.type = OperationElementType::VAL;
+        }
+        result.push_back(el);
+    }
+
+    return result;
 }
 
 masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, size_t begin) {
+    // start and end positions of inline operation
     size_t startpos;
     size_t endpos;
 
+    // was inline operation found yet
     bool found = false;
 
+    bool instring = false;
+
     size_t i = 0;
-    for (char &c : str.substr(begin)) {
-        if (c == '[') {
+    for (char &c : str) {
+        if (i < begin) {
+            i++;
+            continue;
+        }
+        if (c == '[' && !instring) {
+            // nested inline operations not yet supported, error
             if (found) {
                 last_error = "Nested inline operations not yet supported";
                 InlineOperation ret;
@@ -28,7 +91,8 @@ masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, siz
 
             found = true;
             startpos = i;
-        } else if (c == ']') {
+        } else if (c == ']' && !instring) {
+            // cannot close inline operation without opening it first
             if (!found) {
                 last_error = "Found closing bracket without a corresponding opening one";
                 InlineOperation ret;
@@ -38,13 +102,18 @@ masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, siz
 
             endpos = i;
 
+            // return an inline operation
             InlineOperation ret;
-            ret.text = str.substr(startpos, endpos);
+            ret.text = str.substr(startpos, endpos - startpos + 1);
             ret.startPos = startpos;
             ret.endPos = endpos;
-            ret.elements = parseInlineOp(ret.text);
+            ret.varName = "MASMPP_IOP_" + std::to_string(genID());
+            ret.elements = parseInlineOp(ret.text.substr(1, ret.text.length() - 2));
+            ret.empty = false;
 
             return ret;
+        } else if (c == '"') {
+            instring = !instring;
         }
 
         i++;
@@ -54,6 +123,7 @@ masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, siz
 }
 
 int masmpp::Preprocessor::genID() {
+    // return a random number between 0 and 999999
     return (rand() % 999999) - 1;
 }
 
@@ -72,6 +142,7 @@ int masmpp::Preprocessor::getOptions() {
 }
 
 int masmpp::Preprocessor::process() {
+    // disable certain operations
     for (int op : disabledOperations) {
         options &= ~op;
     }
@@ -81,14 +152,37 @@ int masmpp::Preprocessor::process() {
 
         std::istringstream iss(text);
         for (std::string line; std::getline(iss, line); ) {
-            InlineOperation op = findInlineOp(line);
-            if (op.error) {
-                return 1;
+            InlineOperation op;
+            std::vector<InlineOperation> ops;
+            size_t lastPos = 0;
+            while (true) {
+                op = findInlineOp(line, lastPos);
+                if (op.error)
+                    return 1;
+                if (op.empty)
+                    break;
+                
+                std::cout << op.endPos << std::endl;
+                lastPos = op.endPos + 1;
+
+                ops.push_back(op);
+
+                if (op.error)
+                    return 1;
+                
+                std::string txt = genInlineOp(op);
+                out += txt + "\n";
             }
-            if (!op.empty) {
+
+            for (auto op : ops) {
+                line = su::replace(line, op.text, op.varName);
             }
+            out += line + "\n";
         }
+
+        text = out + "\n";
     }
+    
     if (options & PreprocessOptions::FUNCTIONS) {
         std::map<std::string, Function> functions;
 
@@ -197,6 +291,7 @@ int masmpp::Preprocessor::process() {
 
         text = out;
     }
+
     if (options & PreprocessOptions::IF) {
         std::vector<int> ifs;
         std::map<int, bool> hasElse;
@@ -246,6 +341,7 @@ int masmpp::Preprocessor::process() {
 
         text = out;
     }
+
     if (options & PreprocessOptions::LABELS) {
         std::map<std::string, int> labels;
 

@@ -3,20 +3,14 @@
 #include <string>
 #include <iostream>
 
-using namespace masmpp;
-
-const std::string text2 = ".func myprint text text2\n"
-    "print $text\n"
-    "print $text2\n"
-    ".ret 123\n"
-    ".call myprint \"frog1 \" \"frog2\"\n"
-    "print $RET\n"
-    "printflush message1\n";
+const std::string text2 = "print [1 + 2 - 3] [ 4 + 5 - 6 ]\n"
+    "print  \"[ 1 + 2 - 3 ]\"\n"
+    "print [ 1 + 2 - 3 ]\n"
+    "printflush message1";
 
 void IOwrite(std::ostream &stream, std::string text) {
     stream << text;
 }
-
 std::string IOread(std::istream &stream) {
     std::string text;
     for (std::string line; std::getline(std::cin, line); ) {
@@ -39,9 +33,9 @@ int main(int argc, char* argv[]) {
             output = &std::cout;
     }
 
-    std::string text = IOread(*input);
+    // std::string text = IOread(*input);
 
-    Preprocessor proc(text);
+    masmpp::Preprocessor proc(text2);
 
     if (proc.process() != 0) {
         std::cout << proc.getError() << "\n";
