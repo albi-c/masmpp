@@ -22,3 +22,23 @@ op add result @counter 2
 
 jump -1 notEqual a true
 jump -1 equal x false
+
+op add result a b
+op sub result a b
+op mul result a b
+op div result a b
+op idiv result a b
+op mod result a b
+op pow result a b
+op equal result a b
+op notEqual result a b
+op land result a b
+op lessThan result a b
+op lessThanEq result a b
+op greaterThan result a b
+op greaterThanEq result a b
+op shl result a b
+op shr result a b
+op or result a b
+op and result a b
+op xor result a b

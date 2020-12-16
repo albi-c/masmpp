@@ -91,9 +91,7 @@ namespace masmpp {
 
 
         // disabled operations - useful for non-finished operations
-        const std::vector<PreprocessOptions> disabledOperations = {
-            // PreprocessOptions::INLINE_OPERATIONS
-        };
+        const std::vector<PreprocessOptions> disabledOperations = {};
 
         std::string text;
 
@@ -129,7 +127,27 @@ namespace masmpp {
          */
         std::map<std::string, std::string> inlineOperations = {
             {"+", "add"},
-            {"-", "sub"}
+            {"-", "sub"},
+            {"*", "mul"},
+            {"/", "div"},
+            {"//", "idiv"},
+            {"%", "mod"},
+            {"**", "pow"},
+            {"==", "equal"},
+            {"!=", "notEqual"},
+            {"&&", "land"},
+            {"<", "lessThan"},
+            {"<=", "lessThanEq"},
+            {"=<", "lessThanEq"},
+            {">", "greaterThan"},
+            {">=", "greaterThanEq"},
+            {"=>", "greaterThanEq"},
+            {"<<", "shl"},
+            {">>", "shr"},
+            {"|", "or"},
+            {"||", "or"},
+            {"&", "b-and"},
+            {"^", "xor"}
         };
 
         /**
