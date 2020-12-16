@@ -5,5 +5,5 @@ Mindustry assembly preprocessor
 ## Functions:
  - labels
  - functions
- - inline operations (not implemented yet)
+ - inline operations
  - if, else
