@@ -1,6 +1,6 @@
 CXX = x86_64-w64-mingw32-g++
-CXXSTD = c++2a -lstdc++
-CXXLFLAGS = -g -std=$(CXXSTD)
+CXXSTD = c++2a
+CXXLFLAGS = -g -std=$(CXXSTD) -static
 CXXFLAGS = -g -std=$(CXXSTD)
 EXEC = masm++.exe
 OBJECTS = cli.o libmasm++.o strutil.o logger.o clipboard_windows.o
