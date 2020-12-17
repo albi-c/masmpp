@@ -422,9 +422,8 @@ int masmpp::Preprocessor::process() {
 
         std::string out;
 
-        int numLabels = 0;
-
         int i = 0;
+        
         std::istringstream iss(text);
         for (std::string line; std::getline(iss, line); ) {
             if (line.empty())
