@@ -4,6 +4,7 @@ masmpp::Preprocessor::Preprocessor(std::string text, int options)
     : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_CJUMP("^\\.jump \\w+ \\w+$"), R_RCJUMP("^\\.jump \\w+ \\!\\w+$"),
     R_FUNC("^\\.func \\w+((( \\w+)+))?$"), R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"),
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
+    R_DEF("^\\.DEF \\w+ .+$"),
     text(text), options(options) {}
 
 std::string masmpp::Preprocessor::genInlineOp(InlineOperation &operation) {
@@ -75,6 +76,8 @@ masmpp::InlineOperation masmpp::Preprocessor::findInlineOp(std::string &str, siz
 
     size_t i = 0;
     for (char &c : str) {
+        if (i == 0 && c == '#')
+            break;
         if (i < begin) {
             i++;
             continue;
@@ -144,6 +147,28 @@ int masmpp::Preprocessor::process() {
     // disable certain operations
     for (int op : disabledOperations) {
         options &= ~op;
+    }
+
+    if (options & PreprocessOptions::CONST) {
+        std::string out;
+
+        std::istringstream iss(text);
+        for (std::string line; std::getline(iss, line); ) {
+            if (regex_match(line, R_DEF)) {
+                std::vector<std::string> spl = su::split(line, ' ', 2);
+
+                if (constants.find(spl[1]) != constants.end()) {
+                    last_error = "Cannot overwrite a constant";
+                    return 1;
+                }
+
+                constants[spl[1]] = spl[2];
+            } else {
+                out += line + "\n";
+            }
+        }
+
+        text = out;
     }
 
     if (options & PreprocessOptions::INLINE_OPERATIONS) {
@@ -304,8 +329,6 @@ int masmpp::Preprocessor::process() {
                 ifs.push_back(id);
                 hasElse[id] = false;
 
-                // out += "op add MASMPP_IF_" + std::to_string(id) + "_true @counter 2\n";
-                // out += "set @counter MASMPP_IF_" + std::to_string(id) + "_true ifEqual " + line + " true\n";
                 out += ".jump MASMPP_IF_" + std::to_string(id) + "_else !" + line + "\n";
             } else if (std::regex_match(line, R_ELSE)) {
                 if (ifs.size() <= 0) {
@@ -326,6 +349,7 @@ int masmpp::Preprocessor::process() {
                 }
 
                 int id = ifs.back();
+                ifs.pop_back();
 
                 if (!hasElse[id])
                     out += ".label MASMPP_IF_" + std::to_string(id) + "_else\n";

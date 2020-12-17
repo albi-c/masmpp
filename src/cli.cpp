@@ -17,11 +17,6 @@ const std::string helpMessage = "Usage:\n"
     "  -i:c Get input from clipboard\n"
     "  -o:c Write input to clipboard\n";
 
-const std::string text2 = "print [1 + 2 - 3] [ 4 + 5 - 6 ]\n"
-    "print  \"[ 1 + 2 - 3 ]\"\n"
-    "print [ 1 + 2 - 3 ]\n"
-    "printflush message1";
-
 int main(int argc, char* argv[]) {
     Clipboard clipboard;
     STDIOStream stdiostream;
@@ -54,6 +49,7 @@ int main(int argc, char* argv[]) {
 
     if (proc.process() != 0) {
         log::e(proc.getError());
+        return 1;
     }
 
     output->write(proc.getText());

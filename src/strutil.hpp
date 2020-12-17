@@ -28,8 +28,9 @@ namespace su {
      * 
      * @param str string to split
      * @param delim delimiter to split by
+     * @param limit maximium number of times to split (-1 for unlimited)
      */
-    std::vector<std::string> split(const std::string &str, char delim);
+    std::vector<std::string> split(const std::string &str, char delim, int limit = -1);
 
     /**
      * Replaces a substring by another string

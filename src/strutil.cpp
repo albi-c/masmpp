@@ -1,14 +1,18 @@
 #include "strutil.hpp"
 
-std::vector<std::string> su::split(const std::string &str, char delim) {
+std::vector<std::string> su::split(const std::string &str, char delim, int limit) {
     std::vector<std::string> v;
     
     std::string tok;
     bool quotes = false;
+    int splcount = 0;
     for (char c : str) {
         if (c == ' ' && !quotes) {
+            if (splcount >= limit && limit >= 0)
+                continue;
             v.push_back(tok);
             tok = "";
+            splcount++;
         } else if (c == '"') {
             quotes = !quotes;
             tok += c;

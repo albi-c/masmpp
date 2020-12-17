@@ -21,7 +21,8 @@ namespace masmpp {
         INLINE_OPERATIONS = 0b1,
         LABELS = 0b10,
         FUNCTIONS = 0b100,
-        IF = 0b1000
+        IF = 0b1000,
+        CONST = 0b10000
     };
 
     /**
@@ -83,9 +84,10 @@ namespace masmpp {
         const std::regex R_IF;
         const std::regex R_ELSE;
         const std::regex R_EIF;
+        const std::regex R_DEF;
 
         // constants - first value is replaced by the second one
-        const std::map<std::string, std::string> constants = {
+        std::map<std::string, std::string> constants = {
             {"$RET", "MASMPP_FUNC_RET"}
         };
 
