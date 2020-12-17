@@ -179,7 +179,6 @@ int masmpp::Preprocessor::process() {
                     return 1;
                 }
 
-                //std::cout << repnum << std::endl;
                 if (repnum > 0)
                     out += chunk * (repnum - 1);
 
