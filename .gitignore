@@ -4,3 +4,4 @@ masm++.exe
 *.tar.gz
 *.zip
 *.o
+*.masm
