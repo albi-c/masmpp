@@ -23,7 +23,7 @@ namespace log {
          * Log message format
          * Variables: %t - time, %m - message, %i - importance, %c - start color, %e - end color
          */
-        const std::string logFormat = "[%t] %c[%i]%e %m\n";
+        const std::string logFormat = "%c[%i]%e %m\n";
 
         /**
          * Format of time in messages

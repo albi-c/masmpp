@@ -4,7 +4,7 @@ masmpp::Preprocessor::Preprocessor(std::string text, int options)
     : R_LABEL("^\\.label \\w+$"), R_JUMP("^\\.jump \\w+$"), R_CJUMP("^\\.jump \\w+ \\w+$"), R_RCJUMP("^\\.jump \\w+ \\!\\w+$"),
     R_FUNC("^\\.func \\w+((( \\w+)+))?$"), R_CALL("^\\.call \\w+((( [\\w\"\\\\]+)+))?$"), R_RET("^\\.ret( (\\w+))?$"),
     R_FBEGIN("^\\.funcbegin \\w+$"), R_FVAR("\\$\\w+(( \\$\\w+)+)?"), R_IF("^.if \\w+$"), R_ELSE("^.else$"), R_EIF("^.eif$"),
-    R_DEF("^\\.DEF \\w+ .+$"),
+    R_DEF("^\\.DEF \\w+ .+$"), R_REP("^\\.REP \\d+$"), R_EREP("^\\.EREP$"),
     text(text), options(options) {}
 
 std::string masmpp::Preprocessor::genInlineOp(InlineOperation &operation) {
@@ -147,6 +147,54 @@ int masmpp::Preprocessor::process() {
     // disable certain operations
     for (int op : disabledOperations) {
         options &= ~op;
+    }
+
+    if ((options & PreprocessOptions::FUNCTIONS || options & PreprocessOptions::IF) && !(options & PreprocessOptions::LABELS)) {
+        log::w("LABELS are required for FUNCTIONS and IF, enabling");
+        options |= PreprocessOptions::LABELS;
+    }
+
+    if (options & PreprocessOptions::REPEAT) {
+        std::string out;
+
+        std::string chunk;
+        bool inrep;
+        int repnum;
+
+        std::istringstream iss(text);
+        for (std::string line; std::getline(iss, line); ) {
+            if (regex_match(line, R_REP)) {
+                if (inrep) {
+                    last_error = "Nested repeats not yet supported";
+                    return 1;
+                }
+
+                std::vector<std::string> spl = su::split(line, ' ');
+                repnum = std::stoi(spl[1]);
+
+                inrep = true;
+            } else if (regex_match(line, R_EREP)) {
+                if (!inrep) {
+                    last_error = "Closing repeat without opening it";
+                    return 1;
+                }
+
+                //std::cout << repnum << std::endl;
+                if (repnum > 0)
+                    out += chunk * (repnum - 1);
+
+                chunk = "";
+                inrep = false;
+            } else {
+                if (inrep) {
+                    chunk += line + "\n";
+                } else {
+                    out += line + "\n";
+                }
+            }
+        }
+
+        text = out;
     }
 
     if (options & PreprocessOptions::CONST) {

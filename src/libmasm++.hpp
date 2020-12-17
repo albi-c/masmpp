@@ -12,17 +12,19 @@
 #include <iomanip>
 
 #include "strutil.hpp"
+#include "logger.hpp"
 
 namespace masmpp {
     /**
      * Preprocessor options - enables or disables various functions
      */
     enum PreprocessOptions {
-        INLINE_OPERATIONS = 0b1,
-        LABELS = 0b10,
-        FUNCTIONS = 0b100,
-        IF = 0b1000,
-        CONST = 0b10000
+        INLINE_OPERATIONS = 1,
+        LABELS = 2,
+        FUNCTIONS = 4,
+        IF = 8,
+        CONST = 16,
+        REPEAT = 32
     };
 
     /**
@@ -85,6 +87,8 @@ namespace masmpp {
         const std::regex R_ELSE;
         const std::regex R_EIF;
         const std::regex R_DEF;
+        const std::regex R_REP;
+        const std::regex R_EREP;
 
         // constants - first value is replaced by the second one
         std::map<std::string, std::string> constants = {
