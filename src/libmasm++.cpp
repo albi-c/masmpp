@@ -149,6 +149,14 @@ int masmpp::Preprocessor::process() {
         options &= ~op;
     }
 
+    std::string out;
+    std::istringstream iss(text);
+    for (std::string line; std::getline(iss, line); ) {
+        if (!line.empty() && line[0] != '#')
+            out += line + "\n";
+    }
+    text = out;
+
     if ((options & PreprocessOptions::FUNCTIONS || options & PreprocessOptions::IF) && !(options & PreprocessOptions::LABELS)) {
         log::w("LABELS are required for FUNCTIONS and IF, enabling");
         options |= PreprocessOptions::LABELS;
@@ -413,9 +421,8 @@ int masmpp::Preprocessor::process() {
         std::map<std::string, int> labels;
 
         std::string out;
-
+        
         int i = 0;
-
         std::istringstream iss(text);
         for (std::string line; std::getline(iss, line); ) {
             if (line.empty())
